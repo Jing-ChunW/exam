@@ -8,9 +8,9 @@ AnalogOut aout(D7);
 //AnalogIn down(A1);
 //AnalogIn sel(A2);;
 AnalogIn ain(A3);
-Interrupt up(A0);
-Interrupt down(A1);
-Interrupt sel(A2);
+InterruptIn up(A0);
+InterruptIn down(A1);
+InterruptIn sel(A2);
 
 //float S, U, D;
 float Freq[4];
@@ -23,6 +23,14 @@ Freq[0] = 1/8;
 Freq[1] = 1/4;
 Freq[2] = 1/2;
 Freq[3] = 1;
+/*
+class Counter {
+public:
+    Counter(PinName pin): _interrupt(pin) {
+        _interrupt.rise(callback(this, &Counter::increment));
+    }
+    void increment
+}*/
 
 void upup()
 {
@@ -98,8 +106,20 @@ void selsel()
         uLCD.printf("%f Hz", Freq[f]);
         //ThisThread::sleep_for(2ms);
         down = 1;
-        queue.call(waveg);
+        //queue.call(wave);
     }
+}
+
+void upupone() {
+    queue.call(upup);
+}
+
+void downdownone() {
+    queue.call(downdown);
+}
+
+void selselone (){
+    queue.call(selsel);
 }
 
 int main()
@@ -115,7 +135,7 @@ int main()
 //    unit16_t sample = 0;
     // I have to set the frequency range and button connection
 
-    t.start(callback(&queue, &EventQueue::))
+    t.start(callback(&queue, &EventQueue::dispatch_forever));
     uLCD.printf("\nSelect a freq.\n");
     uLCD.text_height(4);
     uLCD.text_height(4);
@@ -127,9 +147,9 @@ int main()
         U = ceil(up);
         D = ceil(down);*/ 
 
-    up.rise(&upup);
-    down.rise(&downdown);
-    sel.rise(&selsel);
+    up.rise(upupone);
+    down.rise(downdownone);
+    sel.rise(selselone);
     
         /*if (S) {
             uLCD.cls();
