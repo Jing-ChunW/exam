@@ -16,8 +16,10 @@ InterruptIn sel(A2);
 float Freq[4];
 int f = 0;
 int done = 0;
-Thread t;
+//Thread t(osPriorityLow);
+//Thread twave(osPriorityNormal);
 EventQueue queue(32 * EVENTS_EVENT_SIZE);
+EventQueue queuewave(32 * EVENTS_EVENT_SIZE);
 
 
 /*
@@ -69,16 +71,15 @@ void downdown()
             uLCD.printf("\nSelect a freq.");
 
             uLCD.text_height(4);
-            uLCD.text_height(4);
             uLCD.locate(2, 2);
             uLCD.printf("%f Hz", Freq[f]);
         } else {
             uLCD.locate(0, 1);
             uLCD.text_height(1);
-            uLCD.text_height(1);
+
             uLCD.printf("Can't be smaller.\n");
             uLCD.text_height(4);
-            uLCD.text_height(4);
+
             uLCD.locate(2, 2);
             uLCD.printf("%f Hz", Freq[f]);
         }
@@ -86,7 +87,53 @@ void downdown()
 }
 
 void wave() {
+    int delay_time = 0;
+    float ADCdata[300];
+    int cnt;
+    float step_up, step_down;
+    float height;
+    int j;
+    if (f == 0) delay_time = 85;
+    else if (f == 1) delay_time = 13;
+    else if (f == 2) delay_time = 4;
+    else if (f == 3) delay_time = 1;
+    step_up = 1/88.0;
+    step_down = 1/88.0;
+    height = 3/3.3;
+    j = 0;
+    cnt = 0;
+    while(1) {
+        for (float i = 0.0; i < height; i += step_up) {
+            aout = i;
+            /*if (j < 300) {
+                ADCdata[j] = ain;
+                j++;
+            }*/
+            wait_us(delay_time);
+        }
+        for (float i = 0.0; i < 80.0; i += 1.0) {
+            aout = height;
+            wait_us(delay_time);
+        }
+        for (float i = height; i > 0.0; i -= step_down) {
+            aout = i;
+            /*if (j < 300) {
+                ADCdata[j] = ain;
+                j++;
+            }*/
+            wait_us(delay_time);
+        }
+        if (!cnt) {
+            if (j == 300) {
+                cnt++;
+                for (int k = 0; k < 300; k++) {
+                    printf("%f\r\n", ADCdata[k]);
+                    ThisThread::sleep_for(100ms);
+                }
+            }
+        }
 
+    }
 }
 
 void selsel()
@@ -94,16 +141,16 @@ void selsel()
     if (down == 0) {
         uLCD.cls();
         uLCD.text_height(1);
-        uLCD.text_height(1);
+
         uLCD.printf("\nSelect a freq.");
 
         uLCD.text_height(4);
-        uLCD.text_height(4);
+
         uLCD.locate(2, 2);
         uLCD.printf("%f Hz", Freq[f]);
         //ThisThread::sleep_for(2ms);
         down = 1;
-        //queue.call(wave);
+        queuewave.call(wave);
     }
 }
 
@@ -121,6 +168,8 @@ void selselone (){
 
 int main()
 {
+
+
     Freq[0] = 1/8;
     Freq[1] = 1/4;
     Freq[2] = 1/2;
@@ -135,83 +184,20 @@ int main()
 //    unit16_t sample = 0;
     // I have to set the frequency range and button connection
 
+    Thread t(osPriorityLow);
+    Thread twave(osPriorityNormal);
     t.start(callback(&queue, &EventQueue::dispatch_forever));
+    twave.start(callback(&queuewave, &EventQueue::dispatch_forever));
     uLCD.printf("\nSelect a freq.\n");
     uLCD.text_height(4);
     uLCD.text_height(4);
     uLCD.locate(2, 2);
     uLCD.printf("%f Hz", Freq[f]);
     // Analog input and LCD
-   // while (!done) {
-        /*S = ceil(sel);
-        U = ceil(up);
-        D = ceil(down);*/ 
-
     up.rise(queue.event(upup));
     down.rise(queue.event(downdown));
     sel.rise(queue.event(selsel));
     
-        /*if (S) {
-            uLCD.cls();
-            uLCD.text_height(1);
-            uLCD.text_height(1);
-            uLCD.printf("\nSelect a freq.");
-
-            uLCD.text_height(4);
-            uLCD.text_height(4);
-            uLCD.locate(2, 2);
-            uLCD.printf("%f Hz", Freq[f]);
-            //ThisThread::sleep_for(2ms);
-            done = 1;
-        } else if (U) {
-            if (f + 1 < 3) {
-                f++;
-                uLCD.cls();
-                uLCD.text_height(1);
-                uLCD.text_height(1);
-                uLCD.printf("\nSelect a freq.");
-                uLCD.text_height(4);
-                uLCD.text_height(4);
-                uLCD.locate(2, 2);
-                uLCD.printf("%f Hz", Freq[f]);
-            } else {
-                uLCD.locate(0, 1);
-                uLCD.text_height(1);
-                uLCD.text_height(1);
-                uLCD.printf("Can't be larger.\n");
-
-                uLCD.text_height(4);
-                uLCD.text_height(4);
-                uLCD.locate(2, 2);
-                uLCD.printf("%f Hz", Freq[f]);
-            }
-            //ThisThread::sleep_for(2ms);
-        } else if (D) {
-            if (f - 1 >= 0) {
-                f--;
-                uLCD.cls();
-                uLCD.text_height(1);
-                uLCD.text_height(1);
-                uLCD.printf("\nSelect a freq.");
-
-                uLCD.text_height(4);
-                uLCD.text_height(4);
-                uLCD.locate(2, 2);
-                uLCD.printf("%f Hz", Freq[f]);
-            } else {
-                uLCD.locate(0, 1);
-                uLCD.text_height(1);
-                uLCD.text_height(1);
-                uLCD.printf("Can't be smaller.\n");
-                uLCD.text_height(4);
-                uLCD.text_height(4);
-                uLCD.locate(2, 2);
-                uLCD.printf("%f Hz", Freq[f]);
-            }
-            //ThisThread::sleep_for(2ms);
-        }*/
-        //ThisThread::sleep_for(50ms);
-    //}
     /*if (f == 0) delay_time = 85;
     else if (f == 1) delay_time = 13;
     else if (f == 2) delay_time = 4;
