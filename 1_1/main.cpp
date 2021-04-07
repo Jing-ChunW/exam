@@ -19,10 +19,7 @@ int done = 0;
 Thread t;
 EventQueue queue(32 * EVENTS_EVENT_SIZE);
 
-Freq[0] = 1/8;
-Freq[1] = 1/4;
-Freq[2] = 1/2;
-Freq[3] = 1;
+
 /*
 class Counter {
 public:
@@ -110,7 +107,7 @@ void selsel()
     }
 }
 
-void upupone() {
+/*void upupone() {
     queue.call(upup);
 }
 
@@ -120,17 +117,20 @@ void downdownone() {
 
 void selselone (){
     queue.call(selsel);
-}
+}*/
 
 int main()
 {
-
-    int delay_time = 0;
+    Freq[0] = 1/8;
+    Freq[1] = 1/4;
+    Freq[2] = 1/2;
+    Freq[3] = 1;
+    /*int delay_time = 0;
     float ADCdata[300];
     int cnt;
     float step_up, step_down;
     float height;
-    int j;
+    int j;*/
 
 //    unit16_t sample = 0;
     // I have to set the frequency range and button connection
@@ -147,9 +147,9 @@ int main()
         U = ceil(up);
         D = ceil(down);*/ 
 
-    up.rise(upupone);
-    down.rise(downdownone);
-    sel.rise(selselone);
+    up.rise(queue.event(upup));
+    down.rise(queue.event(downdown));
+    sel.rise(queue.event(selsel));
     
         /*if (S) {
             uLCD.cls();
