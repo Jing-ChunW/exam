@@ -89,7 +89,7 @@ void downdown()
 void wave() 
 {
     int delay_time = 0;
-    //float ADCdata[300];
+    float ADCdata[480];
     int cnt;
     float step_up, step_down;
     float height;
@@ -124,33 +124,37 @@ void wave()
     while(1) {
         for (float i = 0.0; i < height; i += step_up) {
             aout = i;
-            /*if (j < 300) {
+            if (j < 480) {
                 ADCdata[j] = ain;
                 j++;
-            }*/
+            }
             wait_us(delay_time);
         }
         for (float i = 0.0; i < waittime; i += 1.0) {
             aout = height;
+            if (j < 480) {
+                ADCdata[j] = ain;
+                j++;
+            }
             wait_us(delay_time);
         }
         for (float i = height; i > 0.0; i -= step_down) {
             aout = i;
-            /*if (j < 300) {
+            if (j < 480) {
                 ADCdata[j] = ain;
                 j++;
-            }*/
+            }
             wait_us(delay_time);
         }
-        /*if (!cnt) {
-            if (j == 300) {
+        if (!cnt) {
+            if (j == 480) {
                 cnt++;
-                for (int k = 0; k < 300; k++) {
+                for (int k = 0; k < 480; k++) {
                     printf("%f\r\n", ADCdata[k]);
                     ThisThread::sleep_for(100ms);
                 }
             }
-        }*/
+        }
 
     }
 }
