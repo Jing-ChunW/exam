@@ -16,8 +16,8 @@ InterruptIn sel(A2);
 float Freq[4];
 int f = 0;
 int done = 0;
-//Thread t(osPriorityLow);
-//Thread twave(osPriorityNormal);
+Thread t(osPriorityLow);
+Thread twave(osPriorityNormal);
 EventQueue queue(32 * EVENTS_EVENT_SIZE);
 EventQueue queuewave(32 * EVENTS_EVENT_SIZE);
 
@@ -86,19 +86,38 @@ void downdown()
     }
 }
 
-void wave() {
+void wave() 
+{
     int delay_time = 0;
-    float ADCdata[300];
+    //float ADCdata[300];
     int cnt;
     float step_up, step_down;
     float height;
     int j;
-    if (f == 0) delay_time = 85;
+    float waittime;
+    /*if (f == 0) delay_time = ;
     else if (f == 1) delay_time = 13;
     else if (f == 2) delay_time = 4;
-    else if (f == 3) delay_time = 1;
-    step_up = 1/88.0;
-    step_down = 1/88.0;
+    else if (f == 3) */
+    delay_time = 1000;
+    if (f == 0) {
+        step_up = 1/11.0;
+        step_down = 1/11.0;
+        waittime = 220.0;
+    } else if (f == 1) {
+        step_up = 1/22.0;
+        step_down = 1/22.0;
+        waittime = 200.0;
+    } else if (f == 2) {
+        step_up = 1/44.0;
+        step_down = 1/44.0;
+        waittime = 160.0;
+    } else if (f == 3) {
+        step_up = 1/88.0;
+        step_down = 1/88.0;
+        waittime = 80.0;
+    }
+
     height = 3/3.3;
     j = 0;
     cnt = 0;
@@ -111,7 +130,7 @@ void wave() {
             }*/
             wait_us(delay_time);
         }
-        for (float i = 0.0; i < 80.0; i += 1.0) {
+        for (float i = 0.0; i < waittime; i += 1.0) {
             aout = height;
             wait_us(delay_time);
         }
@@ -123,7 +142,7 @@ void wave() {
             }*/
             wait_us(delay_time);
         }
-        if (!cnt) {
+        /*if (!cnt) {
             if (j == 300) {
                 cnt++;
                 for (int k = 0; k < 300; k++) {
@@ -131,7 +150,7 @@ void wave() {
                     ThisThread::sleep_for(100ms);
                 }
             }
-        }
+        }*/
 
     }
 }
@@ -149,9 +168,9 @@ void selsel()
         uLCD.locate(2, 2);
         uLCD.printf("%f Hz", Freq[f]);
         //ThisThread::sleep_for(2ms);
-        down = 1;
         queuewave.call(wave);
     }
+    down = 1;
 }
 
 /*void upupone() {
@@ -168,8 +187,6 @@ void selselone (){
 
 int main()
 {
-
-
     Freq[0] = 1/8;
     Freq[1] = 1/4;
     Freq[2] = 1/2;
@@ -198,6 +215,12 @@ int main()
     down.rise(queue.event(downdown));
     sel.rise(queue.event(selsel));
     
+   // f = 1;
+   // void wave() {
+    //int delay_time = 0;
+    //float ADCdata[300];
+    //int cnt;
+}
     /*if (f == 0) delay_time = 85;
     else if (f == 1) delay_time = 13;
     else if (f == 2) delay_time = 4;
